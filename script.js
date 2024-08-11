@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (localStorage.getItem('task')) {
         solution = JSON.parse(localStorage.getItem('sudokuSolution'));
-        userGrid = JSON.parse(localStorage.getItem('userGrid')) ? JSON.parse(localStorage.getItem('userGrid')) : JSON.parse(localStorage.getItem('task'));
+        userGrid = JSON.parse(localStorage.getItem('userGrid')) || JSON.parse(localStorage.getItem('task'));
         task = JSON.parse(localStorage.getItem('task'));
         renderSudokuGrid(userGrid);
         spinner.style.display = 'none';
@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     createContextMenu();
     document.getElementById('reset-button').addEventListener('click', resetGrid);
     document.getElementById('validate-button').addEventListener('click', validateGrid);
-    document.getElementById('win-button').addEventListener('click', () => { task = Array.from(solution); userGrid = Array.from(solution); renderSudokuGrid(task) });
 
     // Hide context menu when clicking outside of it
     document.addEventListener('click', (event) => {
@@ -35,7 +34,7 @@ async function fetchSudokuData() {
     const validateBtn = document.getElementById('validate-button');
     const resetBtn = document.getElementById('reset-button');
 
-    spinner.style.display = 'flex'; // Показываем спиннер, пока данные загружаются
+    spinner.style.display = 'flex'; // Show spinner while loading data
     validateBtn.disabled = true;
     resetBtn.disabled = true;
 
@@ -45,21 +44,19 @@ async function fetchSudokuData() {
         solution = data.newboard.grids[0].solution;
 
         task = data.newboard.grids[0].value.map(row => row.slice());
-        userGrid = task;
+        userGrid = [...task];
         localStorage.setItem('sudokuSolution', JSON.stringify(solution));
         localStorage.setItem('userGrid', JSON.stringify(userGrid));
         localStorage.setItem('task', JSON.stringify(task));
 
         renderSudokuGrid(task);
-        validateBtn.disabled = false;
-    resetBtn.disabled = false;
     } catch (error) {
         console.error('Error fetching Sudoku data:', error);
     } finally {
         spinner.style.display = 'none';
+        validateBtn.disabled = false;
+        resetBtn.disabled = false;
     }
-
-    renderSudokuGrid(task);
 }
 
 function renderSudokuGrid(grid) {
@@ -99,27 +96,27 @@ function showContextMenu(event, cell) {
     let menuHeight = menu.offsetHeight;
     let viewportWidth = window.innerWidth;
     let viewportHeight = window.innerHeight;
-    
+
     let x = event.clientX;
     let y = event.clientY;
 
-    // Корректируем позицию по горизонтали
+    // Adjust position horizontally
     if (x + menuWidth > viewportWidth) {
-        x = viewportWidth - menuWidth - 10; // Оставляем отступ 10px от края экрана
+        x = viewportWidth - menuWidth - 10; // Leave 10px margin from the edge
     }
-    
-    // Корректируем позицию по вертикали
+
+    // Adjust position vertically
     if (y + menuHeight > viewportHeight) {
-        y = viewportHeight - menuHeight - 10; // Оставляем отступ 10px от края экрана
+        y = viewportHeight - menuHeight - 10; // Leave 10px margin from the edge
     }
-    
+
     menu.style.left = `${x}px`;
     menu.style.top = `${y}px`;
 }
 
 function createContextMenu() {
     const menu = document.getElementById('context-menu');
-    menu.innerHTML = '';  // Очищаем меню перед созданием
+    menu.innerHTML = ''; // Clear menu before creation
 
     for (let i = 1; i <= 9; i++) {
         const button = document.createElement('button');
@@ -128,7 +125,7 @@ function createContextMenu() {
         menu.appendChild(button);
     }
 
-    menu.style.display = 'none';  // Скрываем меню после создания
+    menu.style.display = 'none'; // Hide menu after creation
 }
 
 function fillCell(number) {
@@ -149,7 +146,9 @@ function fillCell(number) {
 }
 
 function resetGrid() {
-    renderSudokuGrid(task);
+    userGrid = JSON.parse(localStorage.getItem('task')).map(row => row.slice()); // Reset to initial state
+    renderSudokuGrid(userGrid);
+    localStorage.setItem('userGrid', JSON.stringify(userGrid));
 }
 
 function checkCompletion() {
@@ -165,21 +164,21 @@ function validateGrid() {
             const cellDiv = container.children[rowIndex * 9 + colIndex];
             const cellKey = `${rowIndex}-${colIndex}`;
             
-            // Очистка старого таймера, если он существует
+            // Clear old timer if it exists
             if (errorTimers[cellKey]) {
                 clearTimeout(errorTimers[cellKey]);
                 delete errorTimers[cellKey];
             }
 
-            // Удаление и добавление класса для сброса анимации
+            // Remove and add class to reset animation
             cellDiv.classList.remove('cell-error');
 
             if (cell !== solution[rowIndex][colIndex]) {
-                void cellDiv.offsetWidth; // Важно для перезапуска анимации
+                void cellDiv.offsetWidth; // Important to restart animation
                 cellDiv.classList.add('cell-error');
                 hasErrors = true;
 
-                // Сброс анимации и перезапуск через 10.5 секунд
+                // Reset animation and restart after 10.5 seconds
                 errorTimers[cellKey] = setTimeout(() => {
                     if (cellDiv.classList.contains('cell-error')) {
                         cellDiv.style.animation = 'none';
@@ -190,13 +189,10 @@ function validateGrid() {
                 }, 10500);
             } else {
                 task[rowIndex][colIndex] = cell;
-                localStorage.setItem('task', task); // Сохранение правильного ответа в task
+                localStorage.setItem('task', JSON.stringify(task)); // Save correct answer in task
             }
         });
     });
-
-    // Сохранение task в localStorage
-    localStorage.setItem('task', JSON.stringify(task));
 
     if (!hasErrors) {
         setTimeout(() => {
