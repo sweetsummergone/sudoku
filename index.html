@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="sudoku-container" id="sudoku-grid"></div>
-    <div class="controls">
+    <div class="sudoku-wrapper">
+        <div class="sudoku-container" id="sudoku-grid">
+            <div id="spinner"></div>
+        </div>
+    </div>
+    <div class="controls" id="controls">
         <button id="reset-button">Reset</button>
         <button id="validate-button">Validate</button>
-        <button id="win-button">Win</button>
+        <!-- <button id="win-button">Win</button> -->
     </div>
     <div class="context-menu" id="context-menu"></div>
     <script src="script.js"></script>

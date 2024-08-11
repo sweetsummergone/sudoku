@@ -5,11 +5,14 @@ let userGrid = [];
 let errorTimers = {};
 
 document.addEventListener('DOMContentLoaded', () => {
+    const spinner = document.getElementById('spinner');
+
     if (localStorage.getItem('task')) {
         solution = JSON.parse(localStorage.getItem('sudokuSolution'));
         userGrid = JSON.parse(localStorage.getItem('userGrid')) ? JSON.parse(localStorage.getItem('userGrid')) : JSON.parse(localStorage.getItem('task'));
         task = JSON.parse(localStorage.getItem('task'));
         renderSudokuGrid(userGrid);
+        spinner.style.display = 'none';
     } else {
         fetchSudokuData();
     }
@@ -25,19 +28,36 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('context-menu').style.display = 'none';
         }
     });
-    console.log(userGrid);
 });
 
 async function fetchSudokuData() {
-    const response = await fetch('https://sudoku-api.vercel.app/api/dosuku');
-    const data = await response.json();
-    solution = data.newboard.grids[0].solution;
+    const spinner = document.getElementById('spinner');
+    const validateBtn = document.getElementById('validate-button');
+    const resetBtn = document.getElementById('reset-button');
 
-    task = data.newboard.grids[0].value.map(row => row.slice());
-    userGrid = task;
-    localStorage.setItem('sudokuSolution', JSON.stringify(solution));
-    localStorage.setItem('userGrid', JSON.stringify(userGrid));
-    localStorage.setItem('task', JSON.stringify(task));
+    spinner.style.display = 'flex'; // Показываем спиннер, пока данные загружаются
+    validateBtn.disabled = true;
+    resetBtn.disabled = true;
+
+    try {
+        const response = await fetch('https://sudoku-api.vercel.app/api/dosuku');
+        const data = await response.json();
+        solution = data.newboard.grids[0].solution;
+
+        task = data.newboard.grids[0].value.map(row => row.slice());
+        userGrid = task;
+        localStorage.setItem('sudokuSolution', JSON.stringify(solution));
+        localStorage.setItem('userGrid', JSON.stringify(userGrid));
+        localStorage.setItem('task', JSON.stringify(task));
+
+        renderSudokuGrid(task);
+        validateBtn.disabled = false;
+    resetBtn.disabled = false;
+    } catch (error) {
+        console.error('Error fetching Sudoku data:', error);
+    } finally {
+        spinner.style.display = 'none';
+    }
 
     renderSudokuGrid(task);
 }
@@ -75,8 +95,26 @@ function showContextMenu(event, cell) {
 
     const menu = document.getElementById('context-menu');
     menu.style.display = 'flex';
-    menu.style.left = `${event.clientX}px`;
-    menu.style.top = `${event.clientY}px`;
+    let menuWidth = menu.offsetWidth;
+    let menuHeight = menu.offsetHeight;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    
+    let x = event.clientX;
+    let y = event.clientY;
+
+    // Корректируем позицию по горизонтали
+    if (x + menuWidth > viewportWidth) {
+        x = viewportWidth - menuWidth - 10; // Оставляем отступ 10px от края экрана
+    }
+    
+    // Корректируем позицию по вертикали
+    if (y + menuHeight > viewportHeight) {
+        y = viewportHeight - menuHeight - 10; // Оставляем отступ 10px от края экрана
+    }
+    
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
 }
 
 function createContextMenu() {
@@ -117,7 +155,6 @@ function resetGrid() {
 }
 
 function checkCompletion() {
-    console.log(userGrid.flat().every(cell => cell !== 0));
     return userGrid.flat().every(cell => cell !== 0);
 }
 
