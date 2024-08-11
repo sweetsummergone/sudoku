@@ -24,6 +24,7 @@ body {
 
 .sudoku-container {
     display: grid;
+    height: 45vh;
     grid-template-columns: repeat(9, auto); /* 9 колонок равной ширины */
     grid-template-rows: repeat(9, auto); /* 9 рядов равной высоты */
     gap: 2px; /* небольшой промежуток между ячейками */
@@ -134,6 +135,10 @@ body {
 .cell-error {
     background-color: #FF6B6B; /* Red background for errors */
     animation: fadeOutError 3s forwards; /* Плавное затухание */
+}
+
+#win-button {
+
 }
 
 @keyframes fadeOutError {
