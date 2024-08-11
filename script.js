@@ -2,6 +2,7 @@ let selectedCell = null;
 let solution = null;
 let task = [];
 let userGrid = [];
+let errorTimers = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('task')) {
@@ -15,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     createContextMenu();
     document.getElementById('reset-button').addEventListener('click', resetGrid);
+    document.getElementById('validate-button').addEventListener('click', validateGrid);
+    document.getElementById('win-button').addEventListener('click', () => { task = Array.from(solution); userGrid = Array.from(solution); renderSudokuGrid(task) });
 
     // Hide context menu when clicking outside of it
     document.addEventListener('click', (event) => {
@@ -22,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('context-menu').style.display = 'none';
         }
     });
+    console.log(userGrid);
 });
 
 async function fetchSudokuData() {
@@ -113,7 +117,8 @@ function resetGrid() {
 }
 
 function checkCompletion() {
-    return userGrid.every(row => row.every(cell => cell !== 0));
+    console.log(userGrid.flat().every(cell => cell !== 0));
+    return userGrid.flat().every(cell => cell !== 0);
 }
 
 function validateGrid() {
@@ -123,18 +128,46 @@ function validateGrid() {
     userGrid.forEach((row, rowIndex) => {
         row.forEach((cell, colIndex) => {
             const cellDiv = container.children[rowIndex * 9 + colIndex];
+            const cellKey = `${rowIndex}-${colIndex}`;
+            
+            // Очистка старого таймера, если он существует
+            if (errorTimers[cellKey]) {
+                clearTimeout(errorTimers[cellKey]);
+                delete errorTimers[cellKey];
+            }
+
+            // Удаление и добавление класса для сброса анимации
+            cellDiv.classList.remove('cell-error');
+
             if (cell !== solution[rowIndex][colIndex]) {
+                void cellDiv.offsetWidth; // Важно для перезапуска анимации
                 cellDiv.classList.add('cell-error');
                 hasErrors = true;
+
+                // Сброс анимации и перезапуск через 10.5 секунд
+                errorTimers[cellKey] = setTimeout(() => {
+                    if (cellDiv.classList.contains('cell-error')) {
+                        cellDiv.style.animation = 'none';
+                        requestAnimationFrame(() => {
+                            cellDiv.style.animation = '';
+                        });
+                    }
+                }, 10500);
+            } else {
+                task[rowIndex][colIndex] = cell; // Сохранение правильного ответа в task
             }
         });
     });
+
+    // Сохранение task в localStorage
+    localStorage.setItem('task', JSON.stringify(task));
 
     if (!hasErrors) {
         setTimeout(() => {
             if (confirm('Congratulations! You solved the puzzle. Start a new game?')) {
                 localStorage.removeItem('sudokuSolution');
                 localStorage.removeItem('userGrid');
+                localStorage.removeItem('task');
                 location.reload();
             }
         }, 100);

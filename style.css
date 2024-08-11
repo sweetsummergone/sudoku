@@ -16,6 +16,11 @@ body {
     gap: 2px; /* небольшой промежуток между ячейками */
 }
 
+.sudoku-container .fixed {
+    color: #333;
+    background-color: #fff;
+    cursor: default;
+}
 
 .sudoku-container div {
     display: flex;
@@ -24,7 +29,6 @@ body {
     font-size: 18px;
     font-weight: bold;
     border: 1px solid #ccc;
-    background-color: #fff;
     height: 40px;
     width: 40px;
     cursor: pointer;
@@ -101,4 +105,17 @@ body {
 
 .cell-error {
     background-color: #FF6B6B; /* Red background for errors */
+    animation: fadeOutError 3s forwards; /* Плавное затухание */
+}
+
+@keyframes fadeOutError {
+    0% {
+        background-color: transparent; /* Плавное изменение к прозрачному (или стандартному) */
+    }
+    50% {
+        background-color: #FF6B6B; /* Начинаем с красного */
+    }
+    100% {
+        background-color: transparent; /* Плавное изменение к прозрачному (или стандартному) */
+    }
 }
