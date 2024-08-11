@@ -150,8 +150,6 @@ function fillCell(number) {
 
 function resetGrid() {
     renderSudokuGrid(task);
-    userGrid = task;
-    localStorage.removeItem('userGrid');
 }
 
 function checkCompletion() {
@@ -191,7 +189,8 @@ function validateGrid() {
                     }
                 }, 10500);
             } else {
-                task[rowIndex][colIndex] = cell; // Сохранение правильного ответа в task
+                task[rowIndex][colIndex] = cell;
+                localStorage.setItem('task', task); // Сохранение правильного ответа в task
             }
         });
     });
