@@ -4,13 +4,27 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 80vh;
     margin: 0;
     background-color: #f0f0f0;
 }
 
+#spinner {
+    position: absolute;
+    top: 33%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 8px solid #f3f3f3; /* Легкий серый фон */
+    border-top: 8px solid #c42361; /* Синий цвет спиннера */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
 .sudoku-container {
     display: grid;
+    height: 45vh;
     grid-template-columns: repeat(9, auto); /* 9 колонок равной ширины */
     grid-template-rows: repeat(9, auto); /* 9 рядов равной высоты */
     gap: 2px; /* небольшой промежуток между ячейками */
@@ -30,21 +44,28 @@ body {
     font-weight: bold;
     border: 1px solid #ccc;
     height: 40px;
-    width: 40px;
+    min-width: 40px;
     cursor: pointer;
 }
 
-/* Добавление промежутка (gap) для каждой третьей ячейки */
-.sudoku-container div:nth-child(3n + 3) {
-    margin-right: 10px; /* Разрыв после каждой третьей ячейки в строке */
+.sudoku-container div:nth-child(3n):not(:nth-child(9n)) {
+    margin-right: 10px; 
 }
 
-.sudoku-container div:nth-child(27n + 27) {
-    margin-bottom: 10px; /* Разрыв после каждой третьей строки */
-}
+.sudoku-container div:nth-child(27n + 28),
+.sudoku-container div:nth-child(27n + 29),
+.sudoku-container div:nth-child(27n + 30),
+.sudoku-container div:nth-child(27n + 31),
+.sudoku-container div:nth-child(27n + 32),
+.sudoku-container div:nth-child(27n + 33),
+.sudoku-container div:nth-child(27n + 34),
+.sudoku-container div:nth-child(27n + 35),
+.sudoku-container div:nth-child(27n + 36) {
+        margin-top: 3px;
+      }
 
 .controls {
-    margin-top: 20px;
+    margin-top: 100px;
 }
 
 .controls button {
@@ -72,6 +93,14 @@ body {
 
 .controls button:active {
     transform: translateY(1px);
+}
+
+.controls button:disabled {
+    transform: none;
+    color: #aaa;
+    border: 1px #aaa solid;
+    background-color: #f0f0f0;
+    box-shadow: none;
 }
 
 .context-menu {
@@ -108,14 +137,31 @@ body {
     animation: fadeOutError 3s forwards; /* Плавное затухание */
 }
 
+#win-button {
+
+}
+
 @keyframes fadeOutError {
     0% {
         background-color: transparent; /* Плавное изменение к прозрачному (или стандартному) */
     }
     50% {
-        background-color: #FF6B6B; /* Начинаем с красного */
+        background-color: rgba(229, 46, 116, 0.4);
     }
     100% {
         background-color: transparent; /* Плавное изменение к прозрачному (или стандартному) */
     }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .sudoku-container div {
+        height: 35px;
+        min-width: 35px;
+    }
+    
 }
